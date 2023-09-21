@@ -1,0 +1,17 @@
+#!/bin/bash
+
+if [ -f /home/wzjzus5/wzjz.us/Apps/mcgcommon ]
+then
+    . /home/wzjzus5/wzjz.us/Apps/mcgcommon
+fi
+
+echo "Copying Blog apps"
+chmod +x /home/wzjzus5/wzjz.us/Apps/*
+cp /home/wzjzus5/wzjz.us/Apps/* /usr/local/bin
+
+echo "Setting Blog file permissions"
+# ProdFolder is defined in mcgcommon
+chown --recursive wzjzus5 "${ProdFolder}"
+chmod --recursive 0755 "${ProdFolder}"
+
+echo "blogCopyApps Done."

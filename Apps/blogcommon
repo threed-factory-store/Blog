@@ -1,0 +1,13 @@
+#!/bin/bash
+
+if [ -d /home/wzjzus5/mycameragrip.com/mcg ]
+then
+    cd /home/wzjzus5/mycameragrip.com/mcg
+else
+    if [ -d $HOME/walt/MyCameraGrip/MyCameraGrip.com/mcg ]
+    then
+        cd $HOME/walt/MyCameraGrip/MyCameraGrip.com/mcg
+    fi
+fi
+
+ProdFolder="/home/wzjzus5/mycameragrip.com/mcg"

@@ -1,9 +1,10 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <title>Walt's Entry {{post}}</title>
-</head>
-<body>
+{% extends "base.html" %}
+{% block title %}{{MyName}} {{title}}{% endblock title %}
+{% block header %}
+    {{ super() }}
+    / <a href="/posts/{{year}}">{{year}}</a>
+{% endblock header %}
+
+{% block content %}
     {{post|safe}}
-</body>
-</html>
+{% endblock content %}
