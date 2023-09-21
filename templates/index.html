@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Walt</title>
+</head>
+<body>
+    <h1>Walt's Blog</h1>
+    <ul id="years">
+    {% for year in years %}
+        <li><a href="/posts/{{ year }}">{{ year }}</a></li>
+    {% endfor %}
+    </ul>
+</body>
+</html>

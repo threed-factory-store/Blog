@@ -1,0 +1,5 @@
+#!/bin/bash
+
+cd ~/Documents/Blog
+
+flask run --debug
