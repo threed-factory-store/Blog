@@ -2,6 +2,9 @@
 {% block title %}{{MyName}}{% endblock title %}
 {% block content %}
     <h1>{{MyName}}</h1>
+    {% if newPosts %}
+        New Posts!  Refresh page in a few seconds.
+    {% endif %}
     <ul id="years">
     {% for year in years %}
         <li><a href="/posts/{{ year }}">{{ year }}</a></li>

@@ -1,7 +1,10 @@
 {% extends "base.html" %}
 {% block title %}{{MyName}} {{year}}{% endblock title %}
 {% block content %}
-    <h1>{{MyName}}'s Entries for {{year}}</h1>
+    <h1>{{MyName}} {{year}}</h1>
+    {% if newPosts %}
+        New Posts!  Refresh page in a few seconds.
+    {% endif %}
     <ul id="posts">
     {% for post in posts %}
         <li><a href="/posts/{{year}}/{{post}}">{{ post }}</a></li>

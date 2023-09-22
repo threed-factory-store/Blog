@@ -1,11 +1,15 @@
+from datetime import datetime
 import email
 from email.message import EmailMessage
 from email.header import decode_header
+from flask import request
 from html import unescape
 import imaplib
+import re
 import ssl
 import threading
-from os import getenv
+from os import getenv, remove, makedirs
+from os.path import exists
 
 def emailExists():
     imap, messageCount = connectToEmail()
@@ -13,22 +17,22 @@ def emailExists():
     return messageCount > 0
 
 def connectToEmail():
-    # Load system's trusted SSL certificates
     ssl_context = ssl.create_default_context()
-    # Connect
     imap = imaplib.IMAP4_SSL(getenv('EmailImapServer'), getenv('EmailImapPort'), ssl_context=ssl_context)
-    # authenticate
     imap.login(getenv('EmailUsername'), getenv('EmailPassword'))
 
     status, messages = imap.select("INBOX")
-    # total number of emails
     messageCount = int(messages[0])
 
     return imap, messageCount
 
+
 def disconnectFromEmail(imap):
-    imap.close()
-    imap.logout()
+    try:
+        imap.close()
+        imap.logout()
+    except:
+        pass
 
 
 def clean(filename):
@@ -42,6 +46,59 @@ def cleanFileName(filename):
     filename = unescape(filename)
 
     return filename
+
+
+def cleanFrom(From):
+    result = From
+    if "<" in result:
+        match = re.search('<(.*)>', result)
+        if match:
+            result = match.group(1)
+        
+    return result
+
+
+def getMessageYearAndSubject(subject):
+    now = datetime.now()
+    year = "{:04d}".format(now.year)
+    monthDay = "{:02d}-{:02d}".format(now.month, now.day)
+    mySubject = subject
+
+    yearMatch = re.search('^[0-9]+/', mySubject)
+    if yearMatch:
+        subjectParts = mySubject.split("/", 1)
+        subjectYear = subjectParts[0]
+        if len(subjectYear) <= 4:
+            try:
+                intYear = int(subjectYear)
+                if intYear < 100:
+                    intYear += 2000
+                if intYear <= now.year:
+                    year = "{:04d}".format(intYear)
+                    mySubject = subjectParts[1]
+            except:
+                pass
+
+    monthDayMatch = re.search('^\d+-\d+ ', mySubject)
+    if monthDayMatch:
+        monthDayFound = monthDayMatch.group(1)
+        monthDayParts = monthDayFound.split("-")
+        month = monthDayParts[0]
+        day = monthDayParts[1]
+        try:
+            intMonth = int(month)
+            intDay = int(day)
+            monthDay = "{:02d}-{:02d}".format(intMonth, intDay)
+
+            monthDayPlusRest = mySubject.split(" ", 1)
+            mySubject = monthDayPlusRest[1]
+        except:
+            pass
+
+    subject = monthDay+" "+mySubject
+    subject = cleanFileName(subject)
+
+    return year, subject
 
 
 def JustTheBody(body):
@@ -59,7 +116,30 @@ def JustTheBody(body):
     return result
 
 
-def doTheWork(postsFolder, staticFolder):
+def saveMessageText(staticFolder, msgYear, subject, text):
+    folder = staticFolder+msgYear+"/"+subject
+    makedirs(folder, exist_ok=True)
+    filename = folder+"/"+subject
+    mode = "w"
+    if exists(filename):
+        mode = "a"
+
+    with open(filename, mode) as myfile:
+        if mode == "a":
+            myfile.write("<br><br>")
+        myfile.write(text)
+        
+
+def saveMessageAttachment(staticFolder, msgYear, subject, filename, img):
+    if filename:
+        filename = cleanFileName(filename)
+        folder = staticFolder+msgYear+"/"+subject
+        makedirs(folder, exist_ok=True)
+        fullFilename = folder+"/"+filename
+        open(fullFilename, "wb").write(img)
+
+
+def doTheWork(staticFolder, response):
     # TODO:  
     #   Make blog post title be a valid filename.
     #   Handle errors gracefully.  If we come across a folder or file that already exists, 
@@ -69,62 +149,103 @@ def doTheWork(postsFolder, staticFolder):
 
     imap, messageCount = connectToEmail()
 
-    for i in range(messageCount, 0, -1):
-        # fetch the email message by ID
-        res, msgParts = imap.fetch(str(i), "(RFC822)")
-        for response in msgParts:
-            if isinstance(response, tuple):
-                # parse a bytes email into a message object
-                msg = email.message_from_bytes(response[1])
-                
-                # decode the email subject
-                subject, encoding = decode_header(msg["Subject"])[0]
-                if isinstance(subject, bytes):
-                    # if it's a bytes, decode to str
-                    subject = subject.decode(encoding)
-                subject = cleanFileName(subject)
+    try:
+        for i in range(messageCount, 0, -1):
+            res, msgParts = imap.fetch(str(i), "(RFC822)")
+            for response in msgParts:
+                if isinstance(response, tuple):
+                    msg = email.message_from_bytes(response[1])
+                    
+                    subject, encoding = decode_header(msg["Subject"])[0]
+                    if isinstance(subject, bytes):
+                        subject = subject.decode(encoding)
+                    msgYear, subject = getMessageYearAndSubject(subject)
 
-                # TODO:  If subject contains "Year/mm-dd Post Title", then add to that post.
+                    # TODO:  If subject contains "Year/mm-dd Post Title", then add to that post.
 
-                # decode email sender
-                From, encoding = decode_header(msg.get("From"))[0]
-                if isinstance(From, bytes):
-                    From = From.decode(encoding)
-                if From != getenv("MyEmail"):
-                    break
+                    From, encoding = decode_header(msg.get("From"))[0]
+                    if isinstance(From, bytes):
+                        From = From.decode(encoding)
+                    From = cleanFrom(From)
+                    if From != getenv("MyEmail"):
+                        break
 
-                if msg.is_multipart():
-                    # iterate over email parts
                     messageBody=""
-                    fullFilename=""
-                    for part in msg.walk():
-                        # extract content type of email
-                        content_type = part.get_content_type()
-                        content_disposition = str(part.get("Content-Disposition"))
-                        try:
-                            # get the email body
-                            body = part.get_payload(decode=True).decode()
-                        except:
-                            pass
-                        if content_type in ["text/plain", "text/html"] and "attachment" not in content_disposition:
-                            messageBody = JustTheBody(body)
-                        elif "attachment" in content_disposition:
-                            # download attachment
-                            filename = clean(part.get_filename())
-                            if filename:
-                                filename = cleanFileName(filename)
-                                fullFilename = staticFolder+filename
-                                open(fullFilename, "wb").write(part.get_payload(decode=True))
+                    if msg.is_multipart():
+                        fullFilename=""
+                        for part in msg.walk():
+                            content_type = part.get_content_type()
+                            content_disposition = str(part.get("Content-Disposition"))
+                            try:
+                                messageBody = messageBody or part.get_payload(decode=True).decode()
+                            except:
+                                pass
+                            # if content_type in ["text/plain", "text/html"] and "attachment" not in content_disposition:
+                            #     messageBody = JustTheBody(body)
+                            if  ("attachment" in content_disposition or
+                                "inline" in content_disposition):
+                                filename = clean(part.get_filename())
+                                if filename:
+                                    img = part.get_payload(decode=True)
+                                    saveMessageAttachment(staticFolder, msgYear, subject, filename, img)
+                    else:
+                        messageBody = msg.get_payload(decode=True).decode()
+
+                    if messageBody:
+                        saveMessageText(staticFolder, msgYear, subject, messageBody)
 
                     msgId = bytes(str(i), 'utf-8')
                     r = imap.copy(msgId, "INBOX.Trash")             # Copy the message to the Trash
                     r = imap.store(msgId, "+FLAGS", "\\Deleted")    # Mark the original message as deleted
                     r = imap.expunge()                              # Delete the original message
-    disconnectFromEmail(imap)
+    finally:
+        setBusy(response, False)
+        disconnectFromEmail(imap)
 
-def processEmails(postsFolder, staticFolder):
 
-    # TODO:  If someone is alreay processing emails, get out.
+lastCheckedCookieName = "LastCheckedWhen"
+lastCheckedFormat = "%m/%d/%Y %H:%M:%S"
+def setLastCheckedWhen(response):
+    now = datetime.now() 
+    nowStr = now.strftime(lastCheckedFormat)
+    response.set_cookie(lastCheckedCookieName, nowStr)
 
-    x = threading.Thread(target=doTheWork, args=(postsFolder, staticFolder))
+def isItTimeToCheck():
+    
+    return True
+
+    lastCheckedStr = request.cookies.get(lastCheckedCookieName)
+    if not lastCheckedStr:
+        return True
+    
+    lastChecked = datetime.strptime(lastCheckedStr, lastCheckedFormat)
+    now = datetime.now()
+    diff = now - lastChecked
+    minutes = diff.total_seconds() / 60
+    return minutes > 10
+
+
+busyFilename = "./storage/busyProcessingEmails"
+def someoneIsProcessingEmails():
+    return exists(busyFilename)
+
+def setBusy(response, busy):
+    if busy:
+        with open(busyFilename, "w") as file:
+            file.write("Z")
+        setLastCheckedWhen(response)
+    else:
+        remove(busyFilename)
+
+
+def processEmails(staticFolder, response):
+
+    if not isItTimeToCheck():
+        return
+
+    # if someoneIsProcessingEmails():
+    #     return
+
+    setBusy(response, True)
+    x = threading.Thread(target=doTheWork, args=(staticFolder, response))
     x.start()

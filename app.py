@@ -1,5 +1,5 @@
-from flask import Flask
-from flask import render_template
+import datetime
+from flask import Flask, render_template, make_response
 from glob import glob
 import markdown
 import myEmail
@@ -65,14 +65,34 @@ def getPost(year, post):
 @app.route("/")
 @app.route("/posts/")
 def mainPage():
-    # hasEmail = myEmail.emailExists()
     years = getYears()
-    return render_template('index.html', MyName=getenv("MyName"), years=years)
+    thisYear = datetime.date.today().year
+    newPosts = False
+    if years and int(years[0]) < thisYear:
+        newPosts = myEmail.emailExists()
+
+    response = make_response(render_template('index.html', MyName=getenv("MyName"), years=years, newPosts=newPosts))
+    if newPosts:
+        myEmail.processEmails(staticFolder, response)
+
+    return response
+
 
 @app.route("/posts/<int:year>/")
 def posts(year=None):
     posts = getPosts(year)
-    return render_template('year.html', MyName=getenv("MyName"), year=year, posts=posts)
+
+    thisYear = datetime.date.today().year
+    newPosts = False
+    if year == thisYear:
+        newPosts = myEmail.emailExists()
+
+    response = make_response(render_template('year.html', MyName=getenv("MyName"), year=year, posts=posts, newPosts=newPosts))
+    if newPosts:
+        myEmail.processEmails(staticFolder, response)
+
+    return response
+
 
 @app.route("/posts/<int:year>/<post>/")
 def onePost(year, post):
