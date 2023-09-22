@@ -1,11 +1,10 @@
 from flask import Flask
 from flask import render_template
 from glob import glob
-from html import escape 
 import markdown
 import myEmail
 import myFiles
-from os import getenv, walk
+from os import getenv, path, walk
 from dotenv import load_dotenv
 
 load_dotenv() 
@@ -24,24 +23,44 @@ def getPosts(year):
     return result
 
 def getPost(year, post):
+    # These are the file types supported by most browsers:
+    imgTypes = [
+        ".apng",
+        ".avif",
+        ".gif",
+        ".jpg", 
+        ".jpeg", 
+        ".jfif", 
+        ".pjpeg", 
+        ".pjp",
+        ".png",
+        ".svg",
+        ".webp"
+    ]
+    videoTypes = [
+        ".ogg",
+        ".mp4",
+        ".webm"
+    ]
+
     content = ""
     with open(staticFolder+str(year)+"/"+post+"/"+post) as f:
         content = f.read()
-    result = markdown.markdown(content)
+    content = markdown.markdown(content)
     
-    images = sorted(myFiles.findFiles("*", where=staticFolder+f"{year}/{post}"))
+    files = sorted(myFiles.findFiles("*", where=staticFolder+f"{year}/{post}"))
 
-    if images:
-        imageHtml=False
-        for imageFilename in images:
-            if imageFilename == post:
-                continue
-            imageHtml = imageHtml or "<ul id='images' class='no-bullets'>"
-            imageHtml += "<li><img src='"+staticUrlPath+f"{year}/{post}/{imageFilename}' width='80%'></li>"
-        imageHtml+="</ul>"
-        result += imageHtml
+    images = []
+    videos = []
+    for file in files:
+        file_name, file_extension = path.splitext(file)
+        ext = file_extension.lower()
+        if ext in imgTypes:
+            images.append(file)
+        elif ext in videoTypes:
+            videos.append(file)
 
-    return result
+    return content, images, videos
 
 @app.route("/")
 @app.route("/posts/")
@@ -57,5 +76,7 @@ def posts(year=None):
 
 @app.route("/posts/<int:year>/<post>/")
 def onePost(year, post):
-    content = getPost(year, post)
-    return render_template('post.html', MyName=getenv("MyName"), year=year, title=post, post=content)
+    textContent, images, videos = getPost(year, post)
+    return render_template('post.html', MyName=getenv("MyName"), 
+                            year=year, title=post, staticUrlPath=staticUrlPath,
+                            textContent=textContent, images=images, videos=videos)

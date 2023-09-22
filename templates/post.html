@@ -6,5 +6,23 @@
 {% endblock header %}
 
 {% block content %}
-    {{post|safe}}
+    {{textContent|safe}}
+
+    {% if images %}
+        <ul id='images' class='no-bullets'>
+        {% for image in images %}
+            <li><img src='{{staticUrlPath}}{{year}}/{{title}}/{{image}}' width='80%'></li>
+        {% endfor %}
+        </ul>
+    {% endif %}    
+
+
+    {% if videos %}
+        <ul id='videos' class='no-bullets'>
+        {% for video in videos %}
+            <li><video controls src='{{staticUrlPath}}{{year}}/{{title}}/{{video}}' width='80%'></li>
+        {% endfor %}
+        </ul>
+    {% endif %}    
+
 {% endblock content %}
