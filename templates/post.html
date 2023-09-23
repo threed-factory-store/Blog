@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}{{MyName}} {{title}}{% endblock title %}
+{% block header %}
+    {{ super() }}
+    / <a href="/posts/{{year}}">{{year}}</a>
+{% endblock header %}
+
+{% block content %}
+    <div>
+        <h1>{{title}}</h1>
+    </div>
+    {{textContent|safe}}
+
+    <div class="section-images">
+        {% if images %}
+            <ul id='images' class='no-bullets'>
+            {% for image in images %}
+                <li><img src='{{staticUrlPath}}{{year}}/{{title}}/{{image}}'></li>
+            {% endfor %}
+            </ul>
+        {% endif %}    
+
+
+        {% if videos %}
+            <ul id='videos' class='no-bullets'>
+            {% for video in videos %}
+                <li><video controls src='{{staticUrlPath}}{{year}}/{{title}}/{{video}}'></li>
+            {% endfor %}
+            </ul>
+        {% endif %}    
+    </div>
+
+{% endblock content %}
