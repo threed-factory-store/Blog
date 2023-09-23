@@ -6,6 +6,7 @@ import myEmail
 import myFiles
 from os import getenv, path, walk
 from dotenv import load_dotenv
+import time
 
 load_dotenv() 
 
@@ -19,7 +20,19 @@ def getYears():
     return result
 
 def getPosts(year):
-    result = sorted(glob("*", root_dir=staticFolder+f"{year}", recursive = False), reverse=True)
+    yearFolder = staticFolder+f"{year}"
+    folders = glob("*", root_dir=yearFolder, recursive = False)
+
+    # We want to show posts newest first.
+    # If we just call sorted on folders, the posts on one day will be sorted in alphabetical order.
+    # So we have to get the modified datetime of the folders and sort on that.
+    result = {}
+    for folder in folders:
+        modified = time.gmtime(path.getmtime(yearFolder+"/"+folder))
+        result[modified] = folder
+    result = dict(sorted(result.items(), reverse=True))
+    result = list(result.values())
+
     return result
 
 def getPost(year, post):
@@ -62,14 +75,15 @@ def getPost(year, post):
 
     return content, images, videos
 
+
 @app.route("/")
 @app.route("/posts/")
 def mainPage():
     years = getYears()
     thisYear = datetime.date.today().year
-    newPosts = False
+    newPosts = 0
     if years and int(years[0]) < thisYear:
-        newPosts = myEmail.emailExists()
+        newPosts = myEmail.newMailCount()
 
     response = make_response(render_template('index.html', MyName=getenv("MyName"), years=years, newPosts=newPosts))
     if newPosts:
@@ -83,9 +97,9 @@ def posts(year=None):
     posts = getPosts(year)
 
     thisYear = datetime.date.today().year
-    newPosts = False
+    newPosts = 0
     if year == thisYear:
-        newPosts = myEmail.emailExists()
+        newPosts = myEmail.newMailCount()
 
     response = make_response(render_template('year.html', MyName=getenv("MyName"), year=year, posts=posts, newPosts=newPosts))
     if newPosts:

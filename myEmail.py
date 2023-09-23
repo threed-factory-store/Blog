@@ -11,10 +11,10 @@ import threading
 from os import getenv, remove, makedirs
 from os.path import exists
 
-def emailExists():
+def newMailCount():
     imap, messageCount = connectToEmail()
     disconnectFromEmail(imap)
-    return messageCount > 0
+    return messageCount
 
 def connectToEmail():
     ssl_context = ssl.create_default_context()

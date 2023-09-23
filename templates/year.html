@@ -2,8 +2,13 @@
 {% block title %}{{MyName}} {{year}}{% endblock title %}
 {% block content %}
     <h1>{{MyName}} {{year}}</h1>
-    {% if newPosts %}
-        New Posts!  Refresh page in a few seconds.
+    {% if newPosts > 0 %}
+        {% if newPosts > 1 %}
+            New posts!
+        {% else %}
+            There's a new post!
+        {% endif %}
+        Refresh page in a few seconds.
     {% endif %}
     <ul id="posts">
     {% for post in posts %}

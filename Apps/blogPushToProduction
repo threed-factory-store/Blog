@@ -1,9 +1,9 @@
 #!/bin/bash
 
 echo "blogPushToProduction"
-if [ -f /home/wzjzus5/wzjz.us/Apps/blogcommon ]
+if [ -f /home/wzjzus5/public_html/Blog/Apps/blogcommon ]
 then
-    . /home/wzjzus5/wzjz.us/Apps/blogcommon
+    . /home/wzjzus5/public_html/Blog/Apps/blogcommon
 fi
 
 if [ "$USER" != "wzjzus5" ]
@@ -13,8 +13,8 @@ then
     exit 1
 fi
 
-PushToProdFolder="/home/wzjzus5/wzjz.us/PushToProduction"
-# zipFileRootName MUST match zipFileRootName in /home/Walt/Documents/Apps/mcgAppPushToProduction
+PushToProdFolder="/home/wzjzus5/blogPushToProduction"
+# zipFileRootName MUST match zipFileRootName in /home/Walt/Documents/Apps/blogPushToProduction
 zipFileRootName="blog_Prod_"
 
 DeleteOldReleases() {
@@ -55,10 +55,10 @@ then
     exit 4
 fi
 
-python -m ensurepip --upgrade
-pip install Flask
-pip install python-dotenv
-pip install Markdown
+python3 -m ensurepip --upgrade
+python3 -m pip install Flask
+python3 -m pip install python-dotenv
+python3 -m pip install Markdown
 
 DeleteOldReleases
 

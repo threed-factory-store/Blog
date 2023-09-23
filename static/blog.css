@@ -16,3 +16,17 @@ img, video {
     max-height:90vh;
     margin: 20px auto;
 }
+
+#header {
+    position: fixed;
+    top: 0px;
+    height: 30px;   /* MUST match #content.margin-top */
+    width: 100%;
+    background: white;
+    box-sizing: border-box; /* this makes padding work */
+    padding: 5px;
+}
+
+#content {
+    margin-top: 30px;   /* MUST match #header.height */
+}

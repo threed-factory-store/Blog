@@ -1,13 +1,9 @@
 #!/bin/bash
 
-if [ -d /home/wzjzus5/mycameragrip.com/mcg ]
+ProdFolder="/home/wzjzus5/public_html/Blog"
+
+if [ -d ${ProdFolder} ]
 then
-    cd /home/wzjzus5/mycameragrip.com/mcg
-else
-    if [ -d $HOME/walt/MyCameraGrip/MyCameraGrip.com/mcg ]
-    then
-        cd $HOME/walt/MyCameraGrip/MyCameraGrip.com/mcg
-    fi
+    cd ${ProdFolder}
 fi
 
-ProdFolder="/home/wzjzus5/mycameragrip.com/mcg"
