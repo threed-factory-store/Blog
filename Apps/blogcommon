@@ -1,9 +1,0 @@
-#!/bin/bash
-
-ProdFolder="/home/wzjzus5/public_html/Blog"
-
-if [ -d ${ProdFolder} ]
-then
-    cd ${ProdFolder}
-fi
-
