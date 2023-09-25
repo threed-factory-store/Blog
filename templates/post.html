@@ -2,7 +2,7 @@
 {% block title %}{{MyName}} {{title}}{% endblock title %}
 {% block header %}
     {{ super() }}
-    / <a href="/posts/{{year}}">{{year}}</a>
+    / <a href="{{ yearUrl }}">{{year}}</a>
 {% endblock header %}
 
 {% block content %}

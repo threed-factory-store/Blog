@@ -1,5 +1,5 @@
 import datetime
-from flask import Flask, render_template, make_response
+from flask import Flask, render_template, make_response, url_for
 from glob import glob
 import markdown
 import myEmail
@@ -14,6 +14,7 @@ staticUrlPath = "/static/"
 app = Flask(__name__, static_url_path=staticUrlPath)
 
 staticFolder = path.join("./static", "")
+
 
 def getYears(): 
     result = sorted(next(walk(staticFolder))[1], reverse=True)
@@ -81,8 +82,8 @@ def getPost(year, post):
     return content, images, videos
 
 
-@app.route("/")
 @app.route("/posts/")
+@app.route("/")
 def mainPage():
     years = getYears()
     thisYear = datetime.date.today().year
@@ -114,7 +115,8 @@ def posts(year=None):
     if year == thisYear:
         newPosts = myEmail.newMailCount()
 
-    response = make_response(render_template('year.html', MyName=getenv("MyName"), year=year, posts=posts, newPosts=newPosts))
+    response = make_response(render_template('year.html', MyName=getenv("MyName"), 
+                                             year=year, posts=posts, newPosts=newPosts))
     if newPosts:
         myEmail.processEmails(staticFolder, response)
 
@@ -125,5 +127,6 @@ def posts(year=None):
 def onePost(year, post):
     textContent, images, videos = getPost(year, post)
     return render_template('post.html', MyName=getenv("MyName"), 
+                           yearUrl=url_for('posts', year=year).replace("/index.cgi", ''),
                             year=year, title=post, staticUrlPath=staticUrlPath,
                             textContent=textContent, images=images, videos=videos)

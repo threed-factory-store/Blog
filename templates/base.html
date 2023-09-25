@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     {% block head %}
-    <link rel="stylesheet" type="text/css" href="/static/blog.css" />
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='blog.css').replace('/index.cgi', '') }}" />
     <title>{% block title %}{% endblock title %}</title>
     {% endblock head %}
 </head>

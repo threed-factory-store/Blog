@@ -7,6 +7,7 @@ RewriteCond %{REQUEST_FILENAME} !-f
 RewriteRule ^ index.cgi [L]
 
 # MY APACHE ON INMOTIONHOSTING DOESN'T LIKE THIS....
+#
 # To get rid of the /index.cgi/ in urls in Prod...
 # nano /etc/httpd/conf.d/wzjzus_wsgi_config.conf
 # nano /etc/apache2/conf.d/userdata/std/2_4/wzjzus5/wzjz.us/wzjzus_wsgi_config.conf
@@ -20,3 +21,5 @@ RewriteRule ^ index.cgi [L]
 # IncludeOptional "/etc/apache2/conf.d/userdata/std/2_4/wzjzus5/wzjz.us/*.conf"
 #
 # systemctl restart httpd
+#
+# If Apache fails to restart, comment out the IncludeOptional line and start it.
