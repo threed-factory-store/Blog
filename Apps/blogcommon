@@ -1,6 +1,6 @@
 #!/bin/bash
 
-ProdFolder="/home/wzjzus5/public_html/Blog"
+ProdFolder="/home/wzjzus5/blog.wzjz.us"
 
 if [ -d ${ProdFolder} ]
 then

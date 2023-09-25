@@ -157,16 +157,15 @@ def doTheWork(staticFolder, response):
 
                     messageBody=""
                     if msg.is_multipart():
-                        fullFilename=""
                         for part in msg.walk():
                             content_type = part.get_content_type()
                             content_disposition = str(part.get("Content-Disposition"))
                             try:
-                                if content_type == "text/plain" and not gotHtmlText:
+                                if content_type == "text/plain": # and not gotHtmlText:
                                     messageBody = part.get_payload(decode=True).decode()
-                                if content_type == "text/html":
-                                    messageBody = part.get_payload(decode=True).decode()
-                                    gotHtmlText = True
+                                # if content_type == "text/html":
+                                #     messageBody = part.get_payload(decode=True).decode()
+                                #     gotHtmlText = True
                             except:
                                 pass
                             if  ("attachment" in content_disposition or

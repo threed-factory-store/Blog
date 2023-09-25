@@ -1,0 +1,22 @@
+Options -Indexes +ExecCGI
+AddHandler cgi-script .cgi .py
+
+# Send Requests To Front Controller...
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^ index.cgi [L]
+
+# MY APACHE ON INMOTIONHOSTING DOESN'T LIKE THIS....
+# To get rid of the /index.cgi/ in urls in Prod...
+# nano /etc/httpd/conf.d/wzjzus_wsgi_config.conf
+# nano /etc/apache2/conf.d/userdata/std/2_4/wzjzus5/wzjz.us/wzjzus_wsgi_config.conf
+# WSGIScriptAlias / /home/wzjzus5/public_html/index.cgi
+#
+#============================================================
+#
+# nano /etc/apache2/conf/httpd.conf
+#
+# Find the virtual host for wzjz.us....
+# IncludeOptional "/etc/apache2/conf.d/userdata/std/2_4/wzjzus5/wzjz.us/*.conf"
+#
+# systemctl restart httpd

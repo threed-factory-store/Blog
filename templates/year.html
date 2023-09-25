@@ -8,11 +8,11 @@
         {% else %}
             There's a new post!
         {% endif %}
-        Refresh page in a few seconds.
+        Refresh page in a few minutes.
     {% endif %}
     <ul id="posts">
     {% for post in posts %}
-        <li><a href="/posts/{{year}}/{{post}}">{{ post }}</a></li>
+        <li><a href="/posts/{{year}}/{{post}}">{{post}}</a></li>
     {% endfor %}
     </ul>
 {% endblock content %}

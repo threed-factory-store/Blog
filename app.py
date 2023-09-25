@@ -9,27 +9,27 @@ from dotenv import load_dotenv
 import time
 
 load_dotenv() 
-
-staticFolder="./static/"
-staticUrlPath="/static/"
+staticUrlPath = "/static/"
 
 app = Flask(__name__, static_url_path=staticUrlPath)
+
+staticFolder = path.join("./static", "")
 
 def getYears(): 
     result = sorted(next(walk(staticFolder))[1], reverse=True)
     return result
 
 def getPosts(year):
-    yearFolder = staticFolder+f"{year}"
-    folders = glob("*", root_dir=yearFolder, recursive = False)
+    yearFolder = path.join(staticFolder, f"{year}")
+    postFolders = glob(path.join(yearFolder,"*"), recursive = False)
 
     # We want to show posts newest first.
-    # If we just call sorted on folders, the posts on one day will be sorted in alphabetical order.
+    # If we just call sorted on posts, the posts on one day will be sorted in alphabetical order.
     # So we have to get the modified datetime of the folders and sort on that.
     result = {}
-    for folder in folders:
-        modified = path.getmtime(yearFolder+"/"+folder)
-        result[modified] = folder
+    for postFolder in postFolders:
+        modified = path.getmtime(postFolder)
+        result[modified] = postFolder.replace(path.join(yearFolder,""), "")
     result = dict(sorted(result.items(), reverse=True))
     result = list(result.values())
 
@@ -57,21 +57,26 @@ def getPost(year, post):
     ]
 
     content = ""
-    with open(staticFolder+str(year)+"/"+post+"/"+post) as f:
-        content = f.read()
+    try:
+        postFileName = staticFolder+str(year)+"/"+post+"/"+post
+        with open(postFileName) as f:
+            content = f.read()
+    except:
+        content="File not found '"+postFileName+"'"
     content = markdown.markdown(content)
     
     files = sorted(myFiles.findFiles("*", where=staticFolder+f"{year}/{post}"))
 
     images = []
     videos = []
-    for file in files:
-        file_name, file_extension = path.splitext(file)
-        ext = file_extension.lower()
-        if ext in imgTypes:
-            images.append(file)
-        elif ext in videoTypes:
-            videos.append(file)
+    if files:
+        for file in files:
+            file_name, file_extension = path.splitext(file)
+            ext = file_extension.lower()
+            if ext in imgTypes:
+                images.append(file)
+            elif ext in videoTypes:
+                videos.append(file)
 
     return content, images, videos
 
@@ -82,10 +87,17 @@ def mainPage():
     years = getYears()
     thisYear = datetime.date.today().year
     newPosts = 0
+    # Only show the "New Posts" blurb if it would result in the user seeing something new...
     if years and int(years[0]) < thisYear:
         newPosts = myEmail.newMailCount()
 
     response = make_response(render_template('index.html', MyName=getenv("MyName"), years=years, newPosts=newPosts))
+
+    # If we didn't check for new posts above, do it now.
+    # processEmails is something we only want to do if there are actually new emails.
+    if not (years and int(years[0]) < thisYear):
+        newPosts = myEmail.newMailCount()
+
     if newPosts:
         myEmail.processEmails(staticFolder, response)
 
@@ -98,6 +110,7 @@ def posts(year=None):
 
     thisYear = datetime.date.today().year
     newPosts = 0
+    # Only show the "New Posts" blurb if it would result in the user seeing something new...
     if year == thisYear:
         newPosts = myEmail.newMailCount()
 

@@ -1,0 +1,13 @@
+#!/bin/bash
+
+echo "Edit each of these files."
+echo "DO NOT press Ctrl+O to write the file.  Firefox will hang."
+echo "Instead, press Ctrl+X then follow the prompts."
+
+read -p "Press Enter"
+
+nano /var/cpanel/userdata/wzjzus5/wzjz.us
+nano /var/cpanel/userdata/wzjzus5/wzjz.us_SSL
+
+/scripts/rebuildhttpdconf
+systemctl restart httpd

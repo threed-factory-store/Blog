@@ -1,13 +1,19 @@
 #!/bin/bash
 
-if [ -f /home/wzjzus5/public_html/Blog/Apps/blogcommon ]
+if [ -f /home/wzjzus5/blog.wzjz.us/Apps/blogcommon ]
 then
-    . /home/wzjzus5/public_html/Blog/Apps/blogcommon
+    . /home/wzjzus5/blog.wzjz.us/Apps/blogcommon
+fi
+
+if [ "$USER" != "root" ]
+then
+    echo "Not running as root!"
+    exit 1
 fi
 
 echo "Copying Blog apps"
-chmod +x /home/wzjzus5/public_html/Blog/Apps/*
-cp /home/wzjzus5/public_html/Blog/Apps/* /usr/local/bin
+chmod +x ${ProdFolder}/Apps/*
+cp ${ProdFolder}/Apps/* /usr/local/bin
 
 echo "Setting Blog file permissions"
 # ProdFolder is defined in blogcommon
