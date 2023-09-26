@@ -1,10 +1,16 @@
 Options -Indexes +ExecCGI
 AddHandler cgi-script .cgi .py
 
-# Send Requests To Front Controller...
-RewriteCond %{REQUEST_FILENAME} !-d
+
+RewriteEngine On
+
+# Force https:
+RewriteCond %{SERVER_PORT} 80
+RewriteRule ^(.*)$ https://wzjz.us/$1 [R,L]
+
+# Send requests to our app
 RewriteCond %{REQUEST_FILENAME} !-f
-RewriteRule ^ index.cgi [L]
+RewriteRule ^(.*)$ /home/wzjzus5/public_html/index.cgi/$1 [L]
 
 # MY APACHE ON INMOTIONHOSTING DOESN'T LIKE THIS....
 #

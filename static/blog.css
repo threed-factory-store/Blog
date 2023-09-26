@@ -1,3 +1,7 @@
+html {
+    font-size : clamp(1rem, 4vh, 5rem);
+}
+
 ul.no-bullets {
     list-style-type: none;
     padding: 0;
@@ -24,7 +28,6 @@ img, video {
     width: 100%;
     background: white;
     box-sizing: border-box; /* this makes padding work */
-    padding: 5px;
 }
 
 #content {
