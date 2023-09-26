@@ -1,5 +1,6 @@
 html {
-    font-size : clamp(1rem, 4vh, 5rem);
+    /* font-size : clamp(1rem, 4vh, 5rem); */
+    font-size: calc(15px + 0.390625vw);
 }
 
 ul.no-bullets {

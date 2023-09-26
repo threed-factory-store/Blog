@@ -1,10 +1,7 @@
 #!/bin/bash
 
 echo "blogPushToProduction"
-if [ -f /home/wzjzus5/blog.wzjz.us/Apps/blogcommon ]
-then
-    . /home/wzjzus5/blog.wzjz.us/Apps/blogcommon
-fi
+unalias cp
 
 if [ "$USER" != "wzjzus5" ]
 then
@@ -13,7 +10,12 @@ then
     exit 1
 fi
 
-PushToProdFolder="/home/wzjzus5/blog.wzjz.us/PushToProduction"
+if [ -f /home/$USER/public_html/Apps/blogcommon ]
+then
+    . /home/$USER/public_html/Apps/blogcommon
+fi
+
+PushToProdFolder="/home/$USER/blogPushToProduction"
 # zipFileRootName MUST match zipFileRootName in /home/Walt/Documents/Apps/blogPushToProduction
 zipFileRootName="blog_Prod_"
 
@@ -51,14 +53,19 @@ unzip -q -o "${PushToProdFolder}/${fileName}"
 if [ "$?" != "0" ]
 then
     echo "Unzip failed"
-    echo "App is still down"
     exit 4
 fi
 
-cp .env.prod .env
-rm .env.prod
-cp index.cgi.prod index.cgi
-rm index.cgi.prod
+if [ -f .env.prod ]
+then
+    cp .env.prod .env
+    rm .env.prod
+fi
+if [ -f index.cgi.prod ]
+then
+    cp index.cgi.prod index.cgi
+    rm index.cgi.prod
+fi
 
 python3.10 -m ensurepip --upgrade
 python3.10 -m pip install --user Flask

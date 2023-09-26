@@ -3,6 +3,6 @@
 from wsgiref.handlers import CGIHandler
 from app import app as application          # MUST be called application
 import sys
-sys.path.insert(0, '/home/wzjzus5/blog.wzjz.us')
+sys.path.insert(0, '/home/wzjzus5/public_html')
 
 CGIHandler().run(application)
