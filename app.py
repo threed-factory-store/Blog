@@ -63,7 +63,8 @@ def getPost(year, post):
         with open(postFileName) as f:
             content = f.read()
     except:
-        content="File not found '"+postFileName+"'"
+        pass
+        # content="File not found '"+postFileName+"'"
     content = markdown.markdown(content)
     
     files = sorted(myFiles.findFiles("*", where=staticFolder+f"{year}/{post}"))
