@@ -72,12 +72,13 @@ def getPost(year, post):
     if files:
         files = sorted(files)
         for file in files:
-            file_name, file_extension = path.splitext(file)
-            ext = file_extension.lower()
-            if ext in imgTypes:
-                images.append(file)
-            elif ext in videoTypes:
-                videos.append(file)
+            if not file in content:
+                file_name, file_extension = path.splitext(file)
+                ext = file_extension.lower()
+                if ext in imgTypes:
+                    images.append(file)
+                elif ext in videoTypes:
+                    videos.append(file)
 
     return content, images, videos
 
@@ -129,4 +130,4 @@ def onePost(year, post):
     return render_template('post.html', MyName=getenv("MyName"), 
                            yearUrl=url_for('posts', year=year).replace("/index.cgi", ''),
                             year=year, title=post, staticUrl=staticUrl,
-                            textContent=textContent) #, images=images, videos=videos)
+                            textContent=textContent, images=images, videos=videos)
