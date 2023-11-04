@@ -29,7 +29,9 @@ def getPosts(year):
     result = {}
     for postFolder in postFolders:
         modified = path.getmtime(postFolder)
-        result[modified] = postFolder.replace(path.join(yearFolder,""), "")
+        monthDay = path.basename(path.normpath(postFolder))[:5]
+        key = monthDay+"_"+f"{modified:020.7f}"
+        result[key] = postFolder.replace(path.join(yearFolder,""), "")
     result = dict(sorted(result.items(), reverse=True))
     result = list(result.values())
 
