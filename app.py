@@ -8,13 +8,12 @@ from os import getenv, path, walk
 from dotenv import load_dotenv
 import time
 
+
 load_dotenv() 
-staticUrlPath = "/static/"
+staticUrl = "/static"
+staticFolder = "./static"
 
-app = Flask(__name__, static_url_path=staticUrlPath)
-
-staticFolder = path.join("./static", "")
-
+app = Flask(__name__, static_url_path=staticUrl)
 
 def getYears(): 
     result = sorted(next(walk(staticFolder))[1], reverse=True)
@@ -59,7 +58,7 @@ def getPost(year, post):
 
     content = ""
     try:
-        postFileName = staticFolder+str(year)+"/"+post+"/"+post
+        postFileName = path.join(staticFolder,str(year),post,post)
         with open(postFileName) as f:
             content = f.read()
     except:
@@ -67,11 +66,11 @@ def getPost(year, post):
         # content="File not found '"+postFileName+"'"
     content = markdown.markdown(content)
     
-    files = sorted(myFiles.findFiles("*", where=staticFolder+f"{year}/{post}"))
-
     images = []
     videos = []
+    files = myFiles.findFiles("*", where=path.join(staticFolder,str(year),post))
     if files:
+        files = sorted(files)
         for file in files:
             file_name, file_extension = path.splitext(file)
             ext = file_extension.lower()
@@ -101,7 +100,7 @@ def mainPage():
         newPosts = myEmail.newMailCount()
 
     if newPosts:
-        myEmail.processEmails(staticFolder, response)
+        myEmail.processEmails(staticUrl, staticFolder, response)
 
     return response
 
@@ -119,7 +118,7 @@ def posts(year=None):
     response = make_response(render_template('year.html', MyName=getenv("MyName"), 
                                              year=year, posts=posts, newPosts=newPosts))
     if newPosts:
-        myEmail.processEmails(staticFolder, response)
+        myEmail.processEmails(staticUrl, staticFolder, response)
 
     return response
 
@@ -129,5 +128,5 @@ def onePost(year, post):
     textContent, images, videos = getPost(year, post)
     return render_template('post.html', MyName=getenv("MyName"), 
                            yearUrl=url_for('posts', year=year).replace("/index.cgi", ''),
-                            year=year, title=post, staticUrlPath=staticUrlPath,
-                            textContent=textContent, images=images, videos=videos)
+                            year=year, title=post, staticUrl=staticUrl,
+                            textContent=textContent) #, images=images, videos=videos)
